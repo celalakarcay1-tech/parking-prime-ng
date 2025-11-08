@@ -1,0 +1,69 @@
+<div class="notifications-container">
+  <div class="notifications-header">
+    <h2>Bildirimler</h2>
+    <div class="header-actions">
+      <p-badge [value]="unreadCount" severity="danger" *ngIf="unreadCount > 0"></p-badge>
+      <p-button 
+        label="Tümünü Okundu İşaretle" 
+        icon="pi pi-check" 
+        (onClick)="markAllAsRead()"
+        [outlined]="true"
+        [disabled]="unreadCount === 0">
+      </p-button>
+    </div>
+  </div>
+
+  <div class="notifications-list">
+    <p-card 
+      *ngFor="let notification of notifications" 
+      class="notification-card"
+      [class.unread]="!notification.read">
+      <div class="notification-content">
+        <div class="notification-header">
+          <div class="notification-title-section">
+            <p-tag 
+              [value]="getTypeLabel(notification.type)" 
+              [severity]="getTypeSeverity(notification.type)"
+              styleClass="mr-2">
+            </p-tag>
+            <h3 class="notification-title">{{ notification.title }}</h3>
+            <p-badge 
+              *ngIf="!notification.read" 
+              value="Yeni" 
+              severity="danger"
+              styleClass="ml-2">
+            </p-badge>
+          </div>
+          <div class="notification-actions">
+            <p-button 
+              *ngIf="!notification.read"
+              icon="pi pi-check" 
+              [text]="true"
+              [rounded]="true"
+              (onClick)="markAsRead(notification)"
+              pTooltip="Okundu İşaretle"
+              tooltipPosition="top">
+            </p-button>
+            <p-button 
+              icon="pi pi-trash" 
+              [text]="true"
+              [rounded]="true"
+              [severity]="'danger'"
+              (onClick)="deleteNotification(notification)"
+              pTooltip="Sil"
+              tooltipPosition="top">
+            </p-button>
+          </div>
+        </div>
+        <p class="notification-message">{{ notification.message }}</p>
+        <span class="notification-date">{{ notification.date | date:'dd.MM.yyyy HH:mm' }}</span>
+      </div>
+    </p-card>
+
+    <div *ngIf="notifications.length === 0" class="empty-notifications">
+      <i class="pi pi-bell-slash" style="font-size: 3rem; color: #ccc;"></i>
+      <p>Bildirim bulunamadı.</p>
+    </div>
+  </div>
+</div>
+

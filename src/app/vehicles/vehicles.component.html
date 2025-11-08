@@ -1,0 +1,232 @@
+<div class="card">
+  <div class="table-header">
+    <h2>Araç Kayıtları</h2>
+    <div class="header-actions">
+      <div class="search-container">
+        <span class="p-input-icon-left">
+          <i class="pi pi-search"></i>
+          <input 
+            type="text" 
+            pInputText 
+            [(ngModel)]="globalFilter" 
+            placeholder="Plaka, marka, model veya sahip adı ile ara..." 
+            (input)="onGlobalFilter($event)"
+          />
+        </span>
+        <p-button 
+          label="Temizle" 
+          icon="pi pi-filter-slash" 
+          (onClick)="clearFilters()"
+          [outlined]="true"
+          styleClass="ml-2">
+        </p-button>
+      </div>
+      <p-button 
+        label="Yeni Araç" 
+        icon="pi pi-plus" 
+        (onClick)="openNew()"
+        styleClass="ml-2">
+      </p-button>
+    </div>
+  </div>
+
+  <p-table 
+    [value]="filteredVehicles" 
+    [paginator]="true" 
+    [rows]="10" 
+    [showCurrentPageReport]="true" 
+    currentPageReportTemplate="Toplam {totalRecords} kayıttan {first} - {last} arası gösteriliyor"
+    [rowsPerPageOptions]="[5, 10, 25, 50, 100]"
+    [tableStyle]="{'min-width': '70rem'}"
+    styleClass="p-datatable-striped p-datatable-gridlines"
+    [selection]="selectedVehicles"
+    dataKey="id"
+    [scrollable]="true"
+    scrollHeight="500px"
+    [virtualScroll]="filteredVehicles.length > 1000"
+    [virtualScrollItemSize]="46"
+    [lazy]="false"
+    [loading]="loading">
+    
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 3rem">
+          <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+        </th>
+        <th pSortableColumn="plateNumber" style="width: 12%">
+          Plaka <p-sortIcon field="plateNumber"></p-sortIcon>
+        </th>
+        <th pSortableColumn="brand" style="width: 12%">
+          Marka <p-sortIcon field="brand"></p-sortIcon>
+        </th>
+        <th pSortableColumn="model" style="width: 12%">
+          Model <p-sortIcon field="model"></p-sortIcon>
+        </th>
+        <th style="width: 10%">Renk</th>
+        <th pSortableColumn="ownerName" style="width: 15%">
+          Sahip Adı <p-sortIcon field="ownerName"></p-sortIcon>
+        </th>
+        <th style="width: 12%">Telefon</th>
+        <th pSortableColumn="entryDate" style="width: 11%">
+          Giriş Tarihi <p-sortIcon field="entryDate"></p-sortIcon>
+        </th>
+        <th style="width: 11%">Çıkış Tarihi</th>
+        <th pSortableColumn="status" style="width: 9%">
+          Durum <p-sortIcon field="status"></p-sortIcon>
+        </th>
+        <th style="width: 11%">İşlemler</th>
+      </tr>
+    </ng-template>
+    
+    <ng-template pTemplate="body" let-vehicle>
+      <tr>
+        <td>
+          <p-tableCheckbox [value]="vehicle"></p-tableCheckbox>
+        </td>
+        <td><strong>{{ vehicle.plateNumber }}</strong></td>
+        <td>{{ vehicle.brand }}</td>
+        <td>{{ vehicle.model }}</td>
+        <td>{{ vehicle.color }}</td>
+        <td>{{ vehicle.ownerName }}</td>
+        <td>{{ vehicle.ownerPhone }}</td>
+        <td>
+          <span class="date-text">{{ vehicle.entryDate | date:'dd.MM.yyyy HH:mm' }}</span>
+        </td>
+        <td>
+          <span class="date-text" *ngIf="vehicle.exitDate">{{ vehicle.exitDate | date:'dd.MM.yyyy HH:mm' }}</span>
+          <span class="no-exit" *ngIf="!vehicle.exitDate">-</span>
+        </td>
+        <td>
+          <p-tag 
+            [value]="getStatusLabel(vehicle.status)" 
+            [severity]="getStatusSeverity(vehicle.status)">
+          </p-tag>
+        </td>
+        <td>
+          <div class="action-buttons">
+            <p-button 
+              icon="pi pi-pencil" 
+              [rounded]="true"
+              [text]="true"
+              (onClick)="editVehicle(vehicle)"
+              pTooltip="Düzenle"
+              tooltipPosition="top">
+            </p-button>
+            <p-button 
+              icon="pi pi-sign-out" 
+              [rounded]="true"
+              [text]="true"
+              [severity]="'success'"
+              (onClick)="exitVehicle(vehicle)"
+              [disabled]="vehicle.status === 'exited'"
+              pTooltip="Çıkış Yap"
+              tooltipPosition="top">
+            </p-button>
+            <p-button 
+              icon="pi pi-trash" 
+              [rounded]="true"
+              [text]="true"
+              [severity]="'danger'"
+              (onClick)="deleteVehicle(vehicle)"
+              pTooltip="Sil"
+              tooltipPosition="top">
+            </p-button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    
+    <ng-template pTemplate="summary">
+      <div class="summary-footer">
+        <div class="summary-item">
+          <strong>Toplam Araç:</strong> {{ filteredVehicles.length }}
+        </div>
+        <div class="summary-item">
+          <strong>Park Halinde:</strong> {{ getParkedCount() }}
+        </div>
+        <div class="summary-item">
+          <strong>Çıkış Yapılan:</strong> {{ getExitedCount() }}
+        </div>
+      </div>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="11" class="empty-message">
+          <div class="empty-content">
+            <i class="pi pi-inbox" style="font-size: 3rem; color: #ccc;"></i>
+            <p>Kayıt bulunamadı.</p>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- Araç Ekleme/Düzenleme Dialog -->
+<p-dialog 
+  [(visible)]="displayDialog" 
+  [header]="isEditMode ? 'Araç Düzenle' : 'Yeni Araç Ekle'"
+  [modal]="true"
+  [style]="{width: '500px'}"
+  [closable]="true">
+  
+  <div class="dialog-content">
+    <div class="form-group">
+      <label>Plaka *</label>
+      <input type="text" pInputText [(ngModel)]="vehicle.plateNumber" placeholder="34ABC123" />
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Marka *</label>
+        <input type="text" pInputText [(ngModel)]="vehicle.brand" placeholder="Toyota" />
+      </div>
+      <div class="form-group">
+        <label>Model *</label>
+        <input type="text" pInputText [(ngModel)]="vehicle.model" placeholder="Corolla" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Renk *</label>
+      <input type="text" pInputText [(ngModel)]="vehicle.color" placeholder="Beyaz" />
+    </div>
+
+    <div class="form-group">
+      <label>Sahip Adı *</label>
+      <input type="text" pInputText [(ngModel)]="vehicle.ownerName" placeholder="Ahmet Yılmaz" />
+    </div>
+
+    <div class="form-group">
+      <label>Telefon *</label>
+      <input type="text" pInputText [(ngModel)]="vehicle.ownerPhone" placeholder="0532 123 4567" />
+    </div>
+
+    <div class="form-group">
+      <label>Giriş Tarihi *</label>
+      <p-calendar 
+        [(ngModel)]="vehicle.entryDate" 
+        [showTime]="true"
+        [showIcon]="true"
+        dateFormat="dd.mm.yy"
+        styleClass="w-full">
+      </p-calendar>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button 
+      label="İptal" 
+      icon="pi pi-times" 
+      (onClick)="displayDialog = false"
+      [outlined]="true">
+    </p-button>
+    <p-button 
+      label="Kaydet" 
+      icon="pi pi-check" 
+      (onClick)="saveVehicle()">
+    </p-button>
+  </ng-template>
+</p-dialog>
+

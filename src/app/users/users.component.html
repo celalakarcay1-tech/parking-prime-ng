@@ -1,0 +1,198 @@
+<div class="users-container">
+  <div class="users-header">
+    <h2>Kullanıcı Yönetimi</h2>
+    <p-button 
+      label="Yeni Kullanıcı" 
+      icon="pi pi-plus" 
+      (onClick)="openNew()">
+    </p-button>
+  </div>
+
+  <!-- Arama -->
+  <p-card class="filter-card">
+    <div class="search-container">
+      <span class="p-input-icon-left">
+        <i class="pi pi-search"></i>
+        <input 
+          type="text" 
+          pInputText 
+          [(ngModel)]="searchTerm" 
+          placeholder="Kullanıcı adı, e-posta veya telefon ara..." 
+          (input)="filterUsers()"
+        />
+      </span>
+    </div>
+  </p-card>
+
+  <!-- Kullanıcı Tablosu -->
+  <p-card class="table-card">
+    <p-table 
+      [value]="filteredUsers" 
+      [paginator]="true" 
+      [rows]="10"
+      styleClass="p-datatable-striped p-datatable-gridlines">
+      
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Kullanıcı Adı</th>
+          <th>E-posta</th>
+          <th>Telefon</th>
+          <th>Rol</th>
+          <th>Durum</th>
+          <th>Oluşturulma</th>
+          <th>Son Giriş</th>
+          <th>İşlemler</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-user>
+        <tr>
+          <td><strong>{{ user.username }}</strong></td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.phone }}</td>
+          <td>
+            <p-tag 
+              [value]="getRoleLabel(user.role)" 
+              [severity]="getRoleSeverity(user.role)">
+            </p-tag>
+          </td>
+          <td>
+            <p-tag 
+              [value]="getStatusLabel(user.status)" 
+              [severity]="getStatusSeverity(user.status)">
+            </p-tag>
+          </td>
+          <td>{{ user.createdAt | date:'dd.MM.yyyy' }}</td>
+          <td>
+            <span *ngIf="user.lastLogin">{{ user.lastLogin | date:'dd.MM.yyyy HH:mm' }}</span>
+            <span *ngIf="!user.lastLogin" class="no-login">-</span>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <p-button 
+                icon="pi pi-pencil" 
+                [rounded]="true"
+                [text]="true"
+                (onClick)="editUser(user)"
+                pTooltip="Düzenle"
+                tooltipPosition="top">
+              </p-button>
+              <p-button 
+                [icon]="user.status === 'active' ? 'pi pi-ban' : 'pi pi-check'"
+                [rounded]="true"
+                [text]="true"
+                [severity]="user.status === 'active' ? 'warning' : 'success'"
+                (onClick)="toggleStatus(user)"
+                [pTooltip]="user.status === 'active' ? 'Pasif Yap' : 'Aktif Yap'"
+                tooltipPosition="top">
+              </p-button>
+              <p-button 
+                icon="pi pi-trash" 
+                [rounded]="true"
+                [text]="true"
+                [severity]="'danger'"
+                (onClick)="deleteUser(user)"
+                pTooltip="Sil"
+                tooltipPosition="top">
+              </p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8" class="empty-message">
+            <div class="empty-content">
+              <i class="pi pi-users" style="font-size: 3rem; color: #ccc;"></i>
+              <p>Kullanıcı bulunamadı.</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+
+  <!-- Kullanıcı Dialog -->
+  <p-dialog 
+    [(visible)]="displayDialog" 
+    [header]="isEditMode ? 'Kullanıcı Düzenle' : 'Yeni Kullanıcı'"
+    [modal]="true"
+    [style]="{width: '500px'}"
+    [closable]="true">
+    
+    <div class="dialog-content">
+      <div class="form-group">
+        <label>Kullanıcı Adı *</label>
+        <input type="text" pInputText [(ngModel)]="user.username" placeholder="kullaniciadi" />
+      </div>
+
+      <div class="form-group">
+        <label>E-posta *</label>
+        <input type="email" pInputText [(ngModel)]="user.email" placeholder="email@example.com" />
+      </div>
+
+      <div class="form-group">
+        <label>Telefon *</label>
+        <input type="text" pInputText [(ngModel)]="user.phone" placeholder="0532 123 4567" />
+      </div>
+
+      <div class="form-group">
+        <label>Rol *</label>
+        <p-dropdown 
+          [(ngModel)]="user.role" 
+          [options]="roleOptions" 
+          optionLabel="label" 
+          optionValue="value"
+          placeholder="Rol seçin">
+        </p-dropdown>
+      </div>
+
+      <div class="form-group">
+        <label>Durum *</label>
+        <p-dropdown 
+          [(ngModel)]="user.status" 
+          [options]="statusOptions" 
+          optionLabel="label" 
+          optionValue="value"
+          placeholder="Durum seçin">
+        </p-dropdown>
+      </div>
+
+      <div class="form-group" *ngIf="!isEditMode">
+        <label>Şifre *</label>
+        <p-password 
+          [(ngModel)]="password" 
+          [feedback]="false"
+          [toggleMask]="true"
+          placeholder="Şifre girin">
+        </p-password>
+      </div>
+
+      <div class="form-group" *ngIf="isEditMode">
+        <label>Yeni Şifre (Opsiyonel)</label>
+        <p-password 
+          [(ngModel)]="password" 
+          [feedback]="false"
+          [toggleMask]="true"
+          placeholder="Yeni şifre girin">
+        </p-password>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <p-button 
+        label="İptal" 
+        icon="pi pi-times" 
+        (onClick)="displayDialog = false"
+        [outlined]="true">
+      </p-button>
+      <p-button 
+        label="Kaydet" 
+        icon="pi pi-check" 
+        (onClick)="saveUser()">
+      </p-button>
+    </ng-template>
+  </p-dialog>
+</div>
+

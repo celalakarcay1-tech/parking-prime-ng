@@ -1,0 +1,250 @@
+<div class="parking-container">
+  <div class="parking-header">
+    <h2>Otopark Doluluk Durumu</h2>
+    <div class="header-actions">
+      <div class="search-container">
+        <span class="p-input-icon-left">
+          <i class="pi pi-search"></i>
+          <input 
+            type="text" 
+            pInputText 
+            [(ngModel)]="searchTerm" 
+            placeholder="Yer numarası veya plaka ara..." 
+            (input)="searchSpots()"
+          />
+        </span>
+        <p-button 
+          label="Temizle" 
+          icon="pi pi-filter-slash" 
+          (onClick)="clearSearch()"
+          [outlined]="true"
+          styleClass="ml-2">
+        </p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- İstatistikler -->
+  <div class="stats-cards">
+    <p-card class="stat-card">
+      <div class="stat-content">
+        <div class="stat-icon" style="background: #e3f2fd;">
+          <i class="pi pi-map-marker" style="color: #1976d2;"></i>
+        </div>
+        <div class="stat-info">
+          <h3>{{ getStatistics().total }}</h3>
+          <p>Toplam Yer</p>
+        </div>
+      </div>
+    </p-card>
+
+    <p-card class="stat-card">
+      <div class="stat-content">
+        <div class="stat-icon" style="background: #ffebee;">
+          <i class="pi pi-times-circle" style="color: #f44336;"></i>
+        </div>
+        <div class="stat-info">
+          <h3>{{ getStatistics().occupied }}</h3>
+          <p>Dolu</p>
+        </div>
+      </div>
+    </p-card>
+
+    <p-card class="stat-card">
+      <div class="stat-content">
+        <div class="stat-icon" style="background: #e8f5e9;">
+          <i class="pi pi-check-circle" style="color: #4CAF50;"></i>
+        </div>
+        <div class="stat-info">
+          <h3>{{ getStatistics().empty }}</h3>
+          <p>Boş</p>
+        </div>
+      </div>
+    </p-card>
+
+    <p-card class="stat-card">
+      <div class="stat-content">
+        <div class="stat-icon" style="background: #fff3e0;">
+          <i class="pi pi-clock" style="color: #FF9800;"></i>
+        </div>
+        <div class="stat-info">
+          <h3>{{ getStatistics().reserved }}</h3>
+          <p>Rezerve</p>
+        </div>
+      </div>
+    </p-card>
+
+    <p-card class="stat-card">
+      <div class="stat-content">
+        <div class="stat-icon" style="background: #f3e5f5;">
+          <i class="pi pi-percentage" style="color: #9c27b0;"></i>
+        </div>
+        <div class="stat-info">
+          <h3>{{ getStatistics().occupancyRate }}%</h3>
+          <p>Doluluk Oranı</p>
+        </div>
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Kat Seçimi -->
+  <div class="floor-selector">
+    <h3>Kat Seçimi</h3>
+    <div class="floor-buttons">
+      <p-button 
+        *ngFor="let floor of floors"
+        [label]="floor + '. Kat'"
+        [outlined]="selectedFloor !== floor"
+        (onClick)="filterByFloor(floor)"
+        [class.active]="selectedFloor === floor"
+        styleClass="floor-btn">
+      </p-button>
+    </div>
+  </div>
+
+  <!-- Otopark Yerleri -->
+  <div class="parking-floors">
+    <div *ngFor="let floor of floors" class="floor-section" [class.active]="selectedFloor === floor">
+      <h3 class="floor-title">{{ floor }}. Kat</h3>
+      
+      <div class="sections-container">
+        <!-- A Bölümü -->
+        <div class="section">
+          <h4 class="section-title">A Bölümü</h4>
+          <div class="spots-grid">
+            <div 
+              *ngFor="let spot of getSpotsBySection(floor, 'A')"
+              class="spot-card"
+              [class.empty]="spot.status === 'empty'"
+              [class.occupied]="spot.status === 'occupied'"
+              [class.reserved]="spot.status === 'reserved'"
+              (click)="onSpotClick(spot)"
+              [title]="spot.vehiclePlate || 'Boş'">
+              <div class="spot-number">{{ spot.spotNumber }}</div>
+              <p-tag 
+                [value]="getStatusLabel(spot.status)" 
+                [severity]="getStatusSeverity(spot.status)"
+                styleClass="spot-tag">
+              </p-tag>
+              <div class="spot-info" *ngIf="spot.vehiclePlate">
+                <small>{{ spot.vehiclePlate }}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- B Bölümü -->
+        <div class="section">
+          <h4 class="section-title">B Bölümü</h4>
+          <div class="spots-grid">
+            <div 
+              *ngFor="let spot of getSpotsBySection(floor, 'B')"
+              class="spot-card"
+              [class.empty]="spot.status === 'empty'"
+              [class.occupied]="spot.status === 'occupied'"
+              [class.reserved]="spot.status === 'reserved'"
+              (click)="onSpotClick(spot)"
+              [title]="spot.vehiclePlate || 'Boş'">
+              <div class="spot-number">{{ spot.spotNumber }}</div>
+              <p-tag 
+                [value]="getStatusLabel(spot.status)" 
+                [severity]="getStatusSeverity(spot.status)"
+                styleClass="spot-tag">
+              </p-tag>
+              <div class="spot-info" *ngIf="spot.vehiclePlate">
+                <small>{{ spot.vehiclePlate }}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Renk Açıklaması -->
+  <div class="legend">
+    <h4>Renk Açıklaması</h4>
+    <div class="legend-items">
+      <div class="legend-item">
+        <div class="legend-color" style="background: #4CAF50;"></div>
+        <span>Boş</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #f44336;"></div>
+        <span>Dolu</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #FF9800;"></div>
+        <span>Rezerve</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Detay Dialog -->
+<p-dialog 
+  [(visible)]="displayDialog" 
+  header="Otopark Yeri Detayı"
+  [modal]="true"
+  [style]="{width: '450px'}"
+  [closable]="true"
+  *ngIf="selectedSpot">
+  
+  <div class="dialog-content">
+    <div class="detail-section">
+      <h4>Yer Bilgileri</h4>
+      <div class="detail-item">
+        <strong>Yer Numarası:</strong> {{ selectedSpot.spotNumber }}
+      </div>
+      <div class="detail-item">
+        <strong>Kat:</strong> {{ selectedSpot.floor }}
+      </div>
+      <div class="detail-item">
+        <strong>Bölüm:</strong> {{ selectedSpot.section }}
+      </div>
+      <div class="detail-item">
+        <strong>Durum:</strong>
+        <p-tag 
+          [value]="getStatusLabel(selectedSpot.status)" 
+          [severity]="getStatusSeverity(selectedSpot.status)"
+          styleClass="ml-2">
+        </p-tag>
+      </div>
+    </div>
+
+    <div class="detail-section" *ngIf="selectedSpot.vehiclePlate">
+      <h4>Araç Bilgileri</h4>
+      <div class="detail-item">
+        <strong>Plaka:</strong> {{ selectedSpot.vehiclePlate }}
+      </div>
+      <div class="detail-item" *ngIf="getVehicleInfo(selectedSpot)">
+        <strong>Marka:</strong> {{ getVehicleInfo(selectedSpot)?.brand }}
+      </div>
+      <div class="detail-item" *ngIf="getVehicleInfo(selectedSpot)">
+        <strong>Model:</strong> {{ getVehicleInfo(selectedSpot)?.model }}
+      </div>
+      <div class="detail-item" *ngIf="getVehicleInfo(selectedSpot)">
+        <strong>Renk:</strong> {{ getVehicleInfo(selectedSpot)?.color }}
+      </div>
+      <div class="detail-item" *ngIf="getVehicleInfo(selectedSpot)">
+        <strong>Sahip:</strong> {{ getVehicleInfo(selectedSpot)?.ownerName }}
+      </div>
+      <div class="detail-item" *ngIf="getVehicleInfo(selectedSpot)">
+        <strong>Telefon:</strong> {{ getVehicleInfo(selectedSpot)?.ownerPhone }}
+      </div>
+      <div class="detail-item" *ngIf="selectedSpot.entryTime">
+        <strong>Giriş Saati:</strong> {{ selectedSpot.entryTime | date:'dd.MM.yyyy HH:mm' }}
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button 
+      label="Kapat" 
+      icon="pi pi-times" 
+      (onClick)="displayDialog = false"
+      [outlined]="true">
+    </p-button>
+  </ng-template>
+</p-dialog>
+

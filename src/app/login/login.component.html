@@ -1,0 +1,78 @@
+<div class="login-container">
+  <div class="login-wrapper">
+    <p-card class="login-card">
+      <div class="login-content">
+        <div class="login-header">
+          <div class="logo-section">
+            <i class="pi pi-car logo-icon"></i>
+            <h1>Otopark Yönetim</h1>
+            <p class="subtitle">Sisteme giriş yapın</p>
+          </div>
+        </div>
+
+        <form (ngSubmit)="login()" class="login-form">
+          <div class="form-group">
+            <label for="username">Kullanıcı Adı</label>
+            <span class="p-input-icon-left full-width">
+              <i class="pi pi-user input-icon"></i>
+              <input 
+                type="text" 
+                id="username"
+                pInputText 
+                [(ngModel)]="username" 
+                name="username"
+                placeholder="Kullanıcı adınızı girin"
+                (keypress)="onKeyPress($event)"
+                [class.error]="showError && !username"
+                autocomplete="username"
+                class="full-width-input" />
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label for="password">Şifre</label>
+            <span class="p-input-icon-left full-width password-input-wrapper">
+              <i class="pi pi-lock input-icon"></i>
+              <input 
+                [type]="showPassword ? 'text' : 'password'"
+                id="password"
+                pInputText 
+                [(ngModel)]="password" 
+                name="password"
+                placeholder="Şifrenizi girin"
+                (keypress)="onKeyPress($event)"
+                [class.error]="showError && !password"
+                autocomplete="current-password"
+                class="full-width-input password-input" />
+              <i 
+                [class]="showPassword ? 'pi pi-eye-slash password-toggle' : 'pi pi-eye password-toggle'"
+                (click)="togglePasswordVisibility()"
+                title="{{ showPassword ? 'Şifreyi Gizle' : 'Şifreyi Göster' }}">
+              </i>
+            </span>
+          </div>
+
+          <div *ngIf="showError" class="error-message">
+            <i class="pi pi-exclamation-triangle"></i>
+            <span>{{ errorMessage }}</span>
+          </div>
+
+          <p-button 
+            label="Giriş Yap" 
+            icon="pi pi-sign-in"
+            type="submit"
+            styleClass="w-full login-button">
+          </p-button>
+        </form>
+
+        <div class="login-footer">
+          <p class="demo-info">
+            <i class="pi pi-info-circle"></i>
+            Demo: <strong>admin</strong> / <strong>admin123</strong>
+          </p>
+        </div>
+      </div>
+    </p-card>
+  </div>
+</div>
+

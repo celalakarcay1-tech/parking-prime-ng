@@ -1,0 +1,146 @@
+<div class="settings-container">
+  <div class="settings-header">
+    <h2>Ayarlar</h2>
+  </div>
+
+  <div *ngIf="showSuccess" class="success-message">
+    <p-message severity="success" [text]="successMessage"></p-message>
+  </div>
+
+  <!-- Fiyatlandırma Ayarları -->
+  <p-card class="settings-card">
+    <h3>Fiyatlandırma Ayarları</h3>
+    <div class="settings-form">
+      <div class="form-group">
+        <label>Saatlik Ücret (₺)</label>
+        <p-inputNumber 
+          [(ngModel)]="hourlyRate" 
+          [min]="0" 
+          [max]="1000"
+          mode="decimal"
+          [showButtons]="true"
+          [minFractionDigits]="2"
+          [maxFractionDigits]="2">
+        </p-inputNumber>
+      </div>
+      <div class="form-group">
+        <label>Günlük Ücret (₺)</label>
+        <p-inputNumber 
+          [(ngModel)]="dailyRate" 
+          [min]="0" 
+          [max]="10000"
+          mode="decimal"
+          [showButtons]="true"
+          [minFractionDigits]="2"
+          [maxFractionDigits]="2">
+        </p-inputNumber>
+      </div>
+      <div class="form-group">
+        <label>Aylık Ücret (₺)</label>
+        <p-inputNumber 
+          [(ngModel)]="monthlyRate" 
+          [min]="0" 
+          [max]="100000"
+          mode="decimal"
+          [showButtons]="true"
+          [minFractionDigits]="2"
+          [maxFractionDigits]="2">
+        </p-inputNumber>
+      </div>
+    </div>
+  </p-card>
+
+  <!-- Otopark Ayarları -->
+  <p-card class="settings-card">
+    <h3>Otopark Ayarları</h3>
+    <div class="settings-form">
+      <div class="form-group">
+        <label>Toplam Yer Sayısı</label>
+        <p-inputNumber 
+          [(ngModel)]="totalSpots" 
+          [min]="1" 
+          [max]="1000"
+          [showButtons]="true">
+        </p-inputNumber>
+      </div>
+      <div class="form-group">
+        <label>Rezerve Yer Sayısı</label>
+        <p-inputNumber 
+          [(ngModel)]="reservedSpots" 
+          [min]="0" 
+          [max]="totalSpots"
+          [showButtons]="true">
+        </p-inputNumber>
+      </div>
+    </div>
+  </p-card>
+
+  <!-- Sistem Ayarları -->
+  <p-card class="settings-card">
+    <h3>Sistem Ayarları</h3>
+    <div class="settings-form">
+      <div class="form-group toggle-group">
+        <label>Otomatik Çıkış</label>
+        <p-toggleButton 
+          [(ngModel)]="autoExit"
+          onLabel="Açık" 
+          offLabel="Kapalı">
+        </p-toggleButton>
+      </div>
+      <div class="form-group toggle-group">
+        <label>Bildirimler</label>
+        <p-toggleButton 
+          [(ngModel)]="notificationsEnabled"
+          onLabel="Açık" 
+          offLabel="Kapalı">
+        </p-toggleButton>
+      </div>
+      <div class="form-group toggle-group">
+        <label>E-posta Bildirimleri</label>
+        <p-toggleButton 
+          [(ngModel)]="emailNotifications"
+          onLabel="Açık" 
+          offLabel="Kapalı"
+          [disabled]="!notificationsEnabled">
+        </p-toggleButton>
+      </div>
+    </div>
+  </p-card>
+
+  <!-- Kullanıcı Ayarları -->
+  <p-card class="settings-card">
+    <h3>Kullanıcı Ayarları</h3>
+    <div class="settings-form">
+      <div class="form-group">
+        <label>Kullanıcı Adı</label>
+        <input type="text" pInputText [(ngModel)]="username" />
+      </div>
+      <div class="form-group">
+        <label>E-posta</label>
+        <input type="email" pInputText [(ngModel)]="email" />
+      </div>
+      <div class="form-group">
+        <label>Telefon</label>
+        <input type="text" pInputText [(ngModel)]="phone" />
+      </div>
+    </div>
+  </p-card>
+
+  <!-- Kaydet Butonları -->
+  <div class="settings-actions">
+    <p-button 
+      label="Ayarları Kaydet" 
+      icon="pi pi-save" 
+      (onClick)="saveSettings()"
+      styleClass="save-btn">
+    </p-button>
+    <p-button 
+      label="Varsayılanlara Sıfırla" 
+      icon="pi pi-refresh" 
+      (onClick)="resetSettings()"
+      [outlined]="true"
+      [severity]="'danger'">
+    </p-button>
+  </div>
+</div>
+
